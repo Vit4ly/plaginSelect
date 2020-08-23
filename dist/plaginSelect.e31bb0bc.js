@@ -134,7 +134,21 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _classPrivateMethodGet(receiver, privateSet, fn) { if (!privateSet.has(receiver)) { throw new TypeError("attempted to get private field on non-instance"); } return fn; }
 
 var getTemplate = function getTemplate() {
-  return "\n     <div class=\"select__input\" data-type=\"input\">\n            <span>Text</span>\n            <i class=\"fa fa-chevron-down\"></i>\n        </div>\n        <div class=\"select__dropdown\">\n            <ul class=\"select__list\">\n                <li class=\"select__item\">123</li>\n                <li class=\"select__item\">123</li>\n                <li class=\"select__item\">123</li>\n                <li class=\"select__item\">123</li>\n                <li class=\"select__item\">123</li>\n                <li class=\"select__item\">123</li>\n                <li class=\"select__item\">123</li>\n            </ul>\n        </div>\n    ";
+  var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+  var placeholder = arguments.length > 1 ? arguments[1] : undefined;
+  var selectedId = arguments.length > 2 ? arguments[2] : undefined;
+  var text = placeholder !== null && placeholder !== void 0 ? placeholder : 'placeholder по умолчанию';
+  var items = data.map(function (item) {
+    var cls = '';
+
+    if (item.id === selectedId) {
+      text = item.value;
+      cls = 'selected';
+    }
+
+    return "\n        <li class=\"select__item ".concat(cls, "\" data-type=\"item\" data-id=\"").concat(item.id, "\">").concat(item.value, "</li>\n        ");
+  });
+  return "\n     <div class=\"select__backdrop\" data-type=\"backdrop\"></div>\n     <div class=\"select__input\" data-type=\"input\">\n            <span data-type=\"value\">".concat(text, "</span>\n            <i class=\"fa fa-chevron-down\" data-type=\"arrow\"></i>\n        </div>\n        <div class=\"select__dropdown\">\n            <ul class=\"select__list\">\n              ").concat(items.join(''), "\n            </ul>\n        </div>\n    ");
 };
 
 var _render = new WeakSet();
@@ -150,6 +164,8 @@ var Select = /*#__PURE__*/function () {
     _render.add(this);
 
     this.$el = document.querySelector(selector);
+    this.options = options;
+    this.selectedId = options.selectedId;
 
     _classPrivateMethodGet(this, _render, _render2).call(this);
 
@@ -163,7 +179,24 @@ var Select = /*#__PURE__*/function () {
 
       if (type === 'input') {
         this.toggle();
+      } else if (type === 'item') {
+        var id = event.target.dataset.id;
+        this.select(id);
+      } else if (type === 'backdrop') {
+        this.close();
       }
+    }
+  }, {
+    key: "select",
+    value: function select(id) {
+      this.selectedId = id;
+      this.$value.textContent = this.current.value;
+      this.$el.querySelectorAll('[data-type="item"]').forEach(function (el) {
+        el.classList.remove('selected');
+      });
+      this.$el.querySelector("[data-id=\"".concat(id, "\"]")).classList.add('selected');
+      this.options.onSelect ? this.options.onSelect(this.current) : null;
+      this.close();
     }
   }, {
     key: "toggle",
@@ -174,21 +207,35 @@ var Select = /*#__PURE__*/function () {
     key: "open",
     value: function open() {
       this.$el.classList.add('open');
+      this.$arrow.classList.remove('fa-chevron-down');
+      this.$arrow.classList.add('fa-chevron-up');
     }
   }, {
     key: "close",
     value: function close() {
-      this.$el.classList.remove('close');
+      this.$el.classList.remove('open');
+      this.$arrow.classList.add('fa-chevron-down');
+      this.$arrow.classList.remove('fa-chevron-up');
     }
   }, {
     key: "destroy",
     value: function destroy() {
       this.$el.removeEventListener('click', this.clickHandler);
+      this.$el.innerHTML = '';
     }
   }, {
     key: "isOpen",
     get: function get() {
       return this.$el.classList.contains('open');
+    }
+  }, {
+    key: "current",
+    get: function get() {
+      var _this = this;
+
+      return this.options.data.find(function (item) {
+        return item.id === _this.selectedId;
+      });
     }
   }]);
 
@@ -198,13 +245,18 @@ var Select = /*#__PURE__*/function () {
 exports.Select = Select;
 
 var _render2 = function _render2() {
+  var _this$options = this.options,
+      placeholder = _this$options.placeholder,
+      data = _this$options.data;
   this.$el.classList.add('select');
-  this.$el.innerHTML = getTemplate();
+  this.$el.innerHTML = getTemplate(data, placeholder, this.selectedId);
 };
 
 var _setup2 = function _setup2() {
   this.clickHandler = this.clickHandler.bind(this);
   this.$el.addEventListener('click', this.clickHandler);
+  this.$arrow = this.$el.querySelector('[data-type="arrow"]');
+  this.$value = this.$el.querySelector('[data-type="value"]');
 };
 },{}],"../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
@@ -285,7 +337,32 @@ var _Select = require("./Select/Select");
 
 require("./Select/style.scss");
 
-var select = new _Select.Select('#select', {});
+var select = new _Select.Select('#select', {
+  placeholder: 'Выберете элемент',
+  // selectedId: '3',
+  data: [{
+    id: '1',
+    value: 'React'
+  }, {
+    id: '2',
+    value: 'Angular'
+  }, {
+    id: '3',
+    value: 'Vue'
+  }, {
+    id: '4',
+    value: 'React Native'
+  }, {
+    id: '5',
+    value: 'Next'
+  }, {
+    id: '6',
+    value: 'Nest'
+  }],
+  onSelect: function onSelect(item) {
+    console.log('selected Item', item);
+  }
+});
 window.s = select;
 },{"./Select/Select":"Select/Select.js","./Select/style.scss":"Select/style.scss"}],"../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -315,7 +392,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60314" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50706" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
